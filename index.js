@@ -16,25 +16,30 @@ app.use(cors());
 const server = http.createServer(app);
 
 const io = new Server(server, {
-    cors: {
-      origin: "http://localhost:3000",
-      methods: ["GET", "POST"],
-    },
+  cors: {
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST"],
+  },
 
+});
+io.on("connection", (socket) => {
+  console.log(`User Connected: ${socket.id}`);
+
+  socket.on("joinroom", (data) => {
+    socket.join(data);
+
+    console.log(`User with ID : ${socket.id} joined room: ${data}`);
   });
-  io.on("connection", (socket) => {
-    console.log(`User Connected: ${socket.id}`);
 
-    socket.on("join_room", (data) => {
-        socket.join(data);
-      });
-
-
-    socket.on("send_message", (data) => {
-      socket.to(data.room).emit("receive_message", data);
-    });
+  socket.on("send_message", (data) => {
+    socket.to(data.room).emit("receive_message", data);
   });
-  
-server.listen(3001, () => {
+
+  socket.on("disconnect", () => {
+    console.log("User Disconnected", socket.id);
+  });
+});
+
+server.listen(3002, () => {
   console.log("SERVER IS RUNNING");
 });
